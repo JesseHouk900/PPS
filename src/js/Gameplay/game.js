@@ -33,6 +33,7 @@ export default class Game extends Phaser.Scene
 		this.load.image('poundCage', 'assets/images/PoundKennelCage.png');
 		this.load.image('backButton', 'assets/images/BackButton.png');
 		this.load.image('endDayBackground', 'assets/images/EndDayBackground.png');
+		this.load.image('towerInfoBackground', 'assets/images/EndDayBackground.png');
 		
 		this.load.spritesheet('plant', 'assets/sprites/Flower.png', {frameWidth: 128, frameHeight: 128});
         this.load.spritesheet('basicDog', 'assets/sprites/BasicDog.png', {frameWidth: 128, frameHeight: 128});

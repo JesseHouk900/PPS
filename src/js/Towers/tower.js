@@ -6,7 +6,7 @@ export default class TowerGenerator {
         "plant": {
             health: 10,
             fireRate: 1, //in seconds
-			cost: {cash: 20, treats: 0},
+			cost: {cash: 20, treats: 0, variance: 10},
 			bulletSpeed: 100,
 			damage: 10,
             count: 0
@@ -14,17 +14,38 @@ export default class TowerGenerator {
         "basicDog": {
             health: 50,
             fireRate: 1.25, //in seconds
-			cost: {cash: 50, treats: 1},
+			cost: {cash: 50, treats: 1, variance: 15},
 			bulletSpeed: 100,
 			damage: 20,
             count: 0
         }
     }
-    constructor() {
+	
+	static towerNames =  {
+		"generic": [
+		"Barkazar", "Tailwagius", "Dr. Balloon Bopper"]
+	}
+    
+	static towerTypes = {
+		attack: [
+			"frisbee"
+		],
+		noise: [
+			"bark"
+		],
+		cute: [
+			"rollOnBack"
+		]
+	};
+	
+	constructor() {
     }
 
     static generateTower(params = {spriteKey: "plant", isFromGhost: false}) {
-		if (window.currentScene.player.canAfford(params.spriteKey)) {
+		if (!params.cost) {
+			params.cost = TowerGenerator.generateCost(params.spriteKey);
+		}
+		if (window.currentScene.player.canAfford({cost: params.cost})) {
 			TowerGenerator.generateTower_(params);
 		}
 		// cannot afford tower
@@ -75,7 +96,33 @@ export default class TowerGenerator {
 			TowerGenerator.towerData[params.spriteKey].count++;
 		}
 	}
+	
+	/*** @param {string} spriteKey Name of the sprite used to get associated cost
+	@return {number}
+	***/
+	static generateCost(spriteKey) {
+		var cost = TowerGenerator.towerData[spriteKey].cost;
+		return cost.cash + (cost.variance * (2 * Math.random() - 1));
+	}
+	
+	/*** @return {number}
+	***/
+	static getRandomTowerNameIndex() {
+		return Math.floor(Math.random() * TowerGenerator.towerNames["generic"].length);
+	}
+	
+	/*** @return {string}
+	***/
+	static getRandomTowerAttackType() {
+		var attackType = TowerGenerator.towerNames[
+			Object.keys(TowerGenerator.towerNames)[Math.floor(Math.random() 
+				* Object.keys(TowerGenerator.towerNames).length)]];
+		return attackType[
+			Math.floor(Math.random() 
+				* attackType.length)];
+	}
 }
+
 export class Tower {
     constructor(params = {key: "plant", health: 100, fireRate: 1, sprite: null}) {
 		//console.log(params)

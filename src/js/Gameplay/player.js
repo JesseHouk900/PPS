@@ -59,75 +59,64 @@ export default class Player
         
     }
 	
-	canAfford(towerKey)
+	canAfford(cost)
 	{
-		var tower = TowerGenerator.towerData[towerKey];
-		if (this.budget.cash < tower.cost.cash)
-		{
-			return false;
-		}
-		if (this.budget.treats < tower.cost.treats)
-		{
-			return false;
-		}
-		return true;
+		return this.canAffordCash(cost.cash) && this.canAffordTreats(cost.treats);
 	}
 	
-	payFor(params = {cash: 0, treats: 0, key: "plant"})
-	{
-		
-		if (params.cash && params.treats)
-		{
-			this.updateBudget(
-				{
-					cash: -params.cash,
-					treats: -params.treats
-				});
+	payFor(params = {cash: 0, treats: 0, key: "plant"}) {
+		if (params.cash && params.treats) {
+			this.addToBudget({
+				cash: -params.cash,
+				treats: -params.treats
+			});
 		}
-		else if (params.key)
-		{
-			
-			this.updateBudget(
-				{
-					cash: -TowerGenerator.towerData[params.key].cost.cash,
-					treats: -TowerGenerator.towerData[params.key].cost.treats
-				});
-			
+		else if (params.key){
+			this.addToBudget({
+				cash: -TowerGenerator.towerData[params.key].cost.cash,
+				treats: -TowerGenerator.towerData[params.key].cost.treats
+			});			
 		}
 	}
 	
-	receiveReward(rewards)
-	{
-		//console.log(rewards)
-		for (var reward in rewards)
-		{
-			if (reward == "cash")
-			{
-				this.updateBudget({cash: rewards[reward]});
+	receiveReward(rewards) {
+		for (var reward in rewards) {
+			if (reward == "cash") {
+				this.addToBudget({cash: rewards[reward]});
 			}
-			if (reward == "treats")
-			{
-				this.updateBudget({treats: rewards[reward]});
+			if (reward == "treats") {
+				this.addToBudget({treats: rewards[reward]});
 			}
-			//if (reward == cost)
-			//{
-			//	this.budget.cost += rewards[reward];
-			//}
 		}
-		//console.log(this.budget
 	}
 	
-	updateBudget(budgetChange = {cash: 0, treats: 0})
-	{
-		if (budgetChange.cash)
-		{
+	/*** @param {number?} cost Value to check if budget.cash is greater than or equal to
+	@return {boolean} 
+	***/
+	canAffordCash(cost) {
+		if (cost != null) {
+			return this.budget.cash >= cost;
+		}
+		else return true;
+	}
+	
+	/*** @param {number?} cost Value to check if budget.treats is greater than or equal to
+	@return {boolean} 
+	***/
+	canAffordTreat(cost) {
+		if (cost != null) {
+			return this.budget.treats >= cost;
+		}
+		else return true;
+	}
+	
+	addToBudget(budgetChange = {cash: 0, treats: 0}) {
+		if (budgetChange.cash) {
 			this.budget.cash += budgetChange.cash;
 		}
-		if (budgetChange.treats)
-		{
+		if (budgetChange.treats) {
 			this.budget.treats += budgetChange.treats;
 		}
-		
 		window.currentScene.UI.budgetWidget.update();
 	}
 	

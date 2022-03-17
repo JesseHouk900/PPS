@@ -1,0 +1,15 @@
+{	"towerStats": {
+		"basicDog" : {
+			"available": true,
+			"impounded": []
+		},
+		"plant": {
+			"available": true,
+			"impounded": []
+		},
+		"bark": {
+			"available": true,
+			"impounded": []
+		}
+	}
+}

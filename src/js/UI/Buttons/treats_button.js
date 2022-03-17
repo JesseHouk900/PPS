@@ -1,5 +1,5 @@
 import PPSButton from './pps_button.js';
-import TowerGenerator from '../../Towers/tower.js';
+import TowerGenerator from '../../Towers/tower_generator.js';
 import TreatGenerator from '../../Treats/treat.js';
 
 export default class TreatButton extends PPSButton

@@ -1,4 +1,5 @@
-import TowerGenerator, { Tower } from '../Towers/tower.js';
+import Tower from '../Towers/tower.js';
+import TowerGenerator from '../Towers/tower_generator.js';
 import TowerWidget from './Widgets/tower_widget.js';
 import BudgetWidget from './Widgets/budget_widget.js';
 import TreatsButton from './Buttons/treats_button.js';
@@ -25,22 +26,32 @@ export default class UI
 
     onClick() {
 		if (window.currentScene.player.isGhostActive) {
-			TowerGenerator.generateTower({spriteKey: window.currentScene.player.towers["ghost"].key, isFromGhost: true});
+			console.log('UI.onClick: ghostTowers: ')
+			console.log(window.currentScene.player.towers)
+			
+			TowerGenerator.generateTower(
+				{spriteKey: window.currentScene.player.towers["ghost"].spriteKey,
+					isFromGhost: true});
         }
-		else if (window.currentScene.UI.treatsButton.isActive && window.currentScene.UI.treatsButton.towerSelected) {
+		else if (window.currentScene.UI.treatsButton.isActive && 
+				window.currentScene.UI.treatsButton.towerSelected) {
 			window.currentScene.input.off('pointermove');
-			window.currentScene.player.towers[window.currentScene.UI.treatsButton.towerSelected].fetchTreat(window.currentScene.UI.treatsButton.activeTreat);
+			window.currentScene.player.towers
+				[window.currentScene.UI.treatsButton.towerSelected].
+					fetchTreat(window.currentScene.UI.treatsButton.activeTreat);
 		}
 		else {
 			if (window.currentScene.player.recentlyClickedTower != "") {
 				console.log(window.currentScene.player.towers)
-				window.currentScene.player.towers[window.currentScene.player.recentlyClickedTower].sprite.clearTint();
+				window.currentScene.player.towers[window.currentScene.
+					player.recentlyClickedTower].sprite.clearTint();
 			}
 			if (window.currentScene.UI.treatsButton.isActive) {
-				
 				window.currentScene.input.off('pointermove');
 				window.currentScene.UI.treatsButton.activeTreat.beConsumed();
-				window.currentScene.UI.treatsButton.text.setText(parseInt(window.currentScene.UI.treatsButton.text.text) + 1);
+				window.currentScene.UI.treatsButton.text.setText(
+					parseInt(window.currentScene.UI.treatsButton.text.text) +
+						1);
 			}
 		}
     }

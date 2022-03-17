@@ -12,7 +12,7 @@ export default class MainMenu {
 		window.currentScene.mainMenu.hide();
 		window.currentScene.poundStartup({from: "MainMenu"});
 		
-		// .then(function(result) {console.log(window.currentScene.impoundedTowersManager.towers["first"]);}, function(error) {console.log(error);})
+		// .then(function(result) {console.log(window.currentScene.impoundedTowerManager.towers["first"]);}, function(error) {console.log(error);})
 		// //window.currentScene.createGameObjects();
 	}
 	

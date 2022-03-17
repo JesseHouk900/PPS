@@ -1,10 +1,10 @@
 import EnemyGenerator from '../Enemies/enemy.js';
 import Yard from './yard.js';
 import MessageGenerator from '../UI/Message/message.js';
-import TowerGenerator, { Tower } from '../Towers/tower.js';
+import Tower from '../Towers/tower.js';
+import TowerGenerator from '../Towers/tower_generator.js';
 import BudgetWidget from '../UI/Widgets/budget_widget.js';
-
-// let EnemyGenerator = Enemy.default;
+import towerData from '../Data/tower_data.json' assert {type: "json"};
 
 export default class Player
 {
@@ -19,7 +19,7 @@ export default class Player
 
     activateGhostTower() {
         this.isGhostActive = true;
-        this.ghostTowerType = this.towers["ghost"].key;
+        this.ghostTowerType = this.towers["ghost"].spriteKey;
         this.setupTowerPlacementPositionUpdateTimeout("ghost" + this.ghostTowerType);
         this.towerTouchups("ghost");
     }
@@ -41,6 +41,7 @@ export default class Player
 		});
 		delay(managerKey)
 		.then(function(managerKey) {
+			console.log(window.currentScene.player.towers)
 			window.currentScene.player.towers[managerKey].sprite.name = managerKey;
 			window.currentScene.player.towers[managerKey].activate();
 		});
@@ -73,8 +74,8 @@ export default class Player
 		}
 		else if (params.key){
 			this.addToBudget({
-				cash: -TowerGenerator.towerData[params.key].cost.cash,
-				treats: -TowerGenerator.towerData[params.key].cost.treats
+				cash: -towerData.towerStats[params.key].cost.cash,
+				treats: -towerData.towerStats[params.key].cost.treats
 			});			
 		}
 	}
@@ -103,7 +104,7 @@ export default class Player
 	/*** @param {number?} cost Value to check if budget.treats is greater than or equal to
 	@return {boolean} 
 	***/
-	canAffordTreat(cost) {
+	canAffordTreats(cost) {
 		if (cost != null) {
 			return this.budget.treats >= cost;
 		}
@@ -124,22 +125,23 @@ export default class Player
 		if (this.towers["ghost"]) {
 			this.towers["ghost"].destructor()
 		}
-		var keys = Object.keys(TowerGenerator.towerData);
+		var keys = Object.keys(towerData.towerStats);
 		for (var i in keys) {
-			if (TowerGenerator.towerData[keys[i]].count > 0) {
+			if (towerData.towerStats[keys[i]].count > 0) {
 				
-				for (let j = 0; j < TowerGenerator.towerData[keys[i]].count; j++) {
+				for (let j = 0; j < towerData.towerStats[keys[i]].count; j++) {
 					console.log(this.towers)
 					this.towers[keys[i] + j].destructor();
 					
 				}
-				TowerGenerator.towerData[keys[i]].count = 0;
+				towerData.towerStats[keys[i]].count = 0;
 			}
 		}
 	}
 	
 	addToRoster(key, data) {
 		this.roster[key] = data;
+		console.log(this.roster)
 	}
 	
 	removeFromRoster(key) {
@@ -182,7 +184,7 @@ export default class Player
 	}
 	
 	touchupGhost_() {
-		this.towers["ghost"].sprite.anims.play(this.towers["ghost"].key + 'Idle');
+		this.towers["ghost"].sprite.anims.play(this.towers["ghost"].spriteKey + 'Idle');
         this.towers["ghost"].sprite.tint = 0x777777;
         this.towers["ghost"].sprite.name = 'ghost';
 	}

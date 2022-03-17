@@ -1,155 +1,22 @@
-import EnemyGenerator from '../Enemies/enemy.js';
-import MessageGenerator from '../UI/Message/message.js';
+import towerData from '../Data/tower_data.json' assert {type: "json"};
+import enemyData from '../Data/enemy_data.json' assert {type: "json"};
 
-export default class TowerGenerator {
-    static towerData = {
-        "plant": {
-            health: 10,
-            fireRate: 1, //in seconds
-			cost: {cash: 20, treats: 0, variance: 10},
-			bulletSpeed: 100,
-			damage: 10,
-            count: 0
-        },
-        "basicDog": {
-            health: 50,
-            fireRate: 1.25, //in seconds
-			cost: {cash: 50, treats: 1, variance: 15},
-			bulletSpeed: 100,
-			damage: 20,
-            count: 0
-        }
-    }
-	
-	static towerNames =  {
-		"generic": [
-		"Barkazar", "Tailwagius", "Dr. Balloon Bopper"]
-	}
-    
-	static towerTypes = {
-		attack: [
-			"frisbee"
-		],
-		noise: [
-			"bark"
-		],
-		cute: [
-			"rollOnBack"
-		]
-	};
-	
-	constructor() {
-    }
 
-    static generateTower(params = {spriteKey: "plant", isFromGhost: false}) {
-		if (!params.cost) {
-			params.cost = TowerGenerator.generateCost(params.spriteKey);
-		}
-		if (window.currentScene.player.canAfford({cost: params.cost})) {
-			TowerGenerator.generateTower_(params);
-		}
-		// cannot afford tower
-		else {
-			if (params.button) {
-				MessageGenerator.generateMessage({button: params.button, message: "cannot afford"});
-			}
-			else {
-				console.log("could not spawn tower");
-			}
-		}
-    }
-	
-	static generateManagerKey(key) {
-		return key + TowerGenerator.towerData[key].count;
-	}
-	
-	static spawnGhostTower(button) {
-		return new Tower( {
-                key: button.spriteKey,
-                health: TowerGenerator.towerData[button.spriteKey].health,
-                fireRate: TowerGenerator.towerData[button.spriteKey].fireRate
-            });
-	}
-	
-	static spawnTowerFromGhost() {
-		return new Tower( {
-			sprite: window.currentScene.player.towers["ghost"].sprite.clearTint(),
-			health: TowerGenerator.towerData[window.currentScene.player.ghostTowerType].health,
-			fireRate: TowerGenerator.towerData[window.currentScene.player.ghostTowerType].fireRate
-		});
-	}
-	
-	static generateTower_(params = {}) {
-		var managerKey = TowerGenerator.generateManagerKey(params.spriteKey);
-		if (params.button) {
-			window.currentScene.player.towers["ghost"] = TowerGenerator.spawnGhostTower(params.button);
-			window.currentScene.player.activateGhostTower();
-		}
-		else if (params.isFromGhost) {
-			window.currentScene.player.towers[managerKey] = TowerGenerator.spawnTowerFromGhost();
-			window.currentScene.player.deactivateGhostTower();
-			window.currentScene.player.activateNewTower(managerKey);
-			TowerGenerator.towerData[params.spriteKey].count++;
-		}
-		else {
-			window.currentScene.player.spawnTower();
-			TowerGenerator.towerData[params.spriteKey].count++;
-		}
-	}
-	
-	/*** @param {string} spriteKey Name of the sprite used to get associated cost
-	@return {number}
+export default class Tower {
+	/*** @param {!Object<string, undefined>: {
+			{?string}: spriteKey Nullable value for the name identifying the sprite,
+			{?Object<Phaser3.sprite>}: sprite Direct copy of sprite tower will have,
+			{number} health Value of hit points tower will have,
+			{number} fireRate Rate of fire per second
+		} params
 	***/
-	static generateCost(spriteKey) {
-		var cost = TowerGenerator.towerData[spriteKey].cost;
-		return cost.cash + (cost.variance * (2 * Math.random() - 1));
-	}
-	
-	/*** @return {number}
-	***/
-	static getRandomTowerNameIndex() {
-		return Math.floor(Math.random() * TowerGenerator.towerNames["generic"].length);
-	}
-	
-	/*** @return {string}
-	***/
-	static getRandomTowerAttackType() {
-		var attackType = TowerGenerator.towerNames[
-			Object.keys(TowerGenerator.towerNames)[Math.floor(Math.random() 
-				* Object.keys(TowerGenerator.towerNames).length)]];
-		return attackType[
-			Math.floor(Math.random() 
-				* attackType.length)];
-	}
-}
-
-export class Tower {
-    constructor(params = {key: "plant", health: 100, fireRate: 1, sprite: null}) {
-		//console.log(params)
-		if (params.cost) {
-			window.currentScene.player.payFor(params.cost);
-		}
-		//else if (params.key) {
-		//	window.currentScene.player.payFor({key: params.key});
-		//}
-		
-		else if (params.sprite) {
-			window.currentScene.player.payFor({key: params.sprite.texture.key});
-		}
-		
-        if (params.sprite) {
-            this.key = params.sprite.texture.key;
-            this.sprite = params.sprite;
-        }
-        else {
-            this.key = params.key;
-            this.sprite = window.currentScene.player.towers.create(window.currentScene.input.mousePointer.x, window.currentScene.input.mousePointer.y, this.key);
-        }
-		this.managerKey = this.key + TowerGenerator.towerData[this.key].count;
+    constructor(params = {spriteKey: "plant", health: 100, fireRate: 1, sprite: null}) {
+		this.payFor({cost: params.cost, sprite: params.sprite});
+		this.setSpriteAndSpriteKey({sprite: params.sprite, spriteKey: params.spriteKey});
+		this.managerKey = this.spriteKey + towerData.towerStats[this.spriteKey].count;
 		this.health = params.health;
         this.fireRate = params.fireRate;
-        this.bullets = window.currentScene.physics.add.group();
-        window.currentScene.physics.add.collider(this.bullets, window.currentScene.enemyManager.enemies, this.dealDamage);
+		
         this.sprite.setPushable(false);
         this.sprite.setSize(75, 75);
 		this.sprite.setDepth(window.currentScene.calculateZIndex(this));
@@ -158,34 +25,46 @@ export class Tower {
 		this.sprite.on('pointerup', () => {this.onClick({"managerKey": this.managerKey})});
 		}
     }
+	
+	getRateOfFire() {
+		return this.fireRate * 1000;
+	}
     
+	getAttackCleanupRate() {
+		return 1000;
+	}
+	
     activate(managerKey) {
         this.fireing = setInterval(() => {
             this.fire();
-        }, this.fireRate * 1000);
+        }, this.getRateOfFire());
     }
 
     fire() {
-        var bullet = this.bullets.create(this.sprite.x, this.sprite.y, "plant").setScale(.1);
-        bullet.setVelocityX(TowerGenerator.towerData[this.key].bulletSpeed);
-        bullet.parent = this.bullets;
-		bullet.towerKey = this.key;
-		
-		
-		bullet.checkBounds = setInterval(() => {
-			this.bullets.children.each((blt) => {
+		console.log('basicTower fire');
+        var attack = this.createAttack();
+		attack.checkBounds = setInterval(() => {
+			this.attacks.children.each((blt) => {
 				if (blt.x >= window.currentScene.physics.world.bounds.right) {
 					blt.parent.remove(blt, true, true);
 					clearInterval(blt.checkBounds);
 				}
 			});
-		}, 1000);
+		}, this.getAttackCleanupRate());
     }
+	
+	createAttack() {
+		var attack = this.attacks.create(this.sprite.x, this.sprite.y, "plant").setScale(.1);
+        attack.setVelocityX(towerData.towerStats[this.spriteKey].attackSpeed);
+        attack.parent = this.attacks;
+		attack.towerKey = this.spriteKey;
+		return attack;
+	}
 
-    dealDamage(bullet, enemy) {
-        bullet.parent.remove(bullet, true, true);            
-        if (Object.keys(EnemyGenerator.enemyData).includes(enemy.texture.key)) {
-            window.currentScene.enemyManager.enemies[enemy.name].receiveDamage(TowerGenerator.towerData[bullet.towerKey].damage);            
+    dealDamage(attack, enemy) {
+        attack.parent.remove(attack, true, true);            
+        if (Object.keys(enemyData.enemyStats).includes(enemy.texture.key)) {
+            window.currentScene.enemyManager.enemies[enemy.name].receiveDamage(towerData.towerStats[attack.towerKey].damage);            
         }
         else {
             //delete enemy;
@@ -196,7 +75,7 @@ export class Tower {
 		if (window.currentScene.enemyManager.enemies[enemy.name]) {
 			this.health -= window.currentScene.enemyManager.enemies[enemy.name].damage;
 			if (this.health <= 0) {
-				enemy.setVelocityX = EnemyGenerator.enemyData[enemy.texture.key].speed;
+				enemy.setVelocityX = enemyData.enemyStats[enemy.texture.key].speed;
 				this.destructor();
 				//console.log(enemy);
 			}
@@ -250,6 +129,48 @@ export class Tower {
 		
 		//this.sprite.x = newPosition[0];
 		//this.sprite.y = newPosition[1];
+	}
+	
+	payFor(params) {	
+		if (params.cost) {
+			window.currentScene.player.payFor(params.cost);
+		}
+		
+		else if (params.sprite) {
+			window.currentScene.player.payFor({key: params.sprite.texture.key});
+		}
+	}
+	
+	makeAttacksGroup() {
+		var attacks = window.currentScene.physics.add.group();
+        this.setAttacksGroupCollider_(attacks);
+		return attacks;
+	}
+	
+	setAttackType() {
+		this.attacks = this.makeAttacksGroup();
+	}
+	
+	setAttacksGroupCollider_(attacks) {
+		window.currentScene.physics.add.collider(attacks, window.currentScene.enemyManager.enemies, this.dealDamage);
+	}
+	
+	setSpriteAndSpriteKey(params) {
+		console.log('towerSpriteAssignmentParams: Params: ')
+		console.log(params)
+        if (params.sprite) {
+			console.log('Tower Sprite Key: params.sprite.texture.key: ' +
+				params.sprite.texture.key)
+            this.spriteKey = params.sprite.texture.key;
+            this.sprite = params.sprite;
+        }
+        else {
+			console.log('Tower Sprite Key: params.spriteKey: ' + params.spriteKey)
+            this.spriteKey = params.spriteKey;
+            this.sprite = window.currentScene.player.towers.create(
+				window.currentScene.input.mousePointer.x, 
+				window.currentScene.input.mousePointer.y, this.spriteKey);
+        }
 	}
 	
 	destructor() {

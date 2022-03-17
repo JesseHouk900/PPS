@@ -1,0 +1,36 @@
+{	"towerStats": {
+		"plant": {
+			"health": 10,
+			"fireRate": 1,
+			"cost": {"cash": 20, "treats": 0, "variance": 10},
+			"attackSpeed": 100,
+			"damage": 10,
+			"count": 0
+		},
+		"basicDog": {
+			"health": 50,
+			"fireRate": 1.25,
+			"cost": {"cash": 50, "treats": 1, "variance": 15},
+			"attackSpeed": 100,
+			"damage": 20,
+			"count": 0
+		}
+	},
+	
+	"towerNames":  {
+		"generic": [
+		"Barkazar", "Tailwagius", "Dr. Balloon Bopper"]
+	},
+    
+	"towerTypes": {
+		"attack": [
+			"frisbee"
+		],
+		"noise": [
+			"bark"
+		],
+		"cute": [
+			"rollOnBack"
+		]
+	}
+}

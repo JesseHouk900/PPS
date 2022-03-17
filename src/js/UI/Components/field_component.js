@@ -12,7 +12,8 @@ export default class FieldComponent {
 	constructor(params) {
 		this.setFieldName(params.field);
 		this.setValue(params.value);
-		this.text = window.currentScene.add.text(params.width, params.height, this.print());
+		this.text = window.currentScene.add.text(params.width, params.height, this.print()).
+			setDepth(window.currentScene.calculateZIndex(this));
 		this.setColor(params.color);
 		this.setFont(params.font);
 	}
@@ -55,6 +56,14 @@ export default class FieldComponent {
 		if (position[0] && position[1]) {
 			this.text.setPosition(position[0], position[1]);
 		}
+	}
+	
+	setScale(x) {
+		this.text.setScale(x);
+	}
+	
+	setScale(x, y) {
+		this.text.setScale(x, y);
 	}
 	
 	print() {

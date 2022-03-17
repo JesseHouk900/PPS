@@ -1,0 +1,10 @@
+{	"enemyStats": {
+        "plant": {
+            "speed": 45,
+            "health": 25,
+            "pointValue": 10,
+			"damage": 10,
+            "count": 0
+        }
+    }
+}

@@ -5,7 +5,7 @@ import WaveGenerator from './wave_generator.js';
 import * as Enemy from '../Enemies/enemy.js';
 import MainMenu from '../UI/MainMenu/main_menu.js';
 import HurtBoundry from './hurt_boundry.js';
-import {ImpoundedTowerManager} from '../UI/Buttons/impounded_tower.js';
+import ImpoundedTowerManager from '../UI/Buttons/impounded_tower_manager.js';
 import PoundMenu from '../UI/PoundMenu/pound_menu.js';
 import EndDayMenu from '../UI/EndDayMenu/end_day_menu.js';
 
@@ -41,6 +41,7 @@ export default class Game extends Phaser.Scene
     
     
     create() {
+		
 		this.mainMenu = new MainMenu();
         //this.createGameObjects();
         
@@ -110,8 +111,8 @@ export default class Game extends Phaser.Scene
             }
 			
 			// for createPoundObjects
-			else if (params.objectName == 'impoundedTowersManager') {
-				window.currentScene.impoundedTowersManager = new ImpoundedTowerManager();
+			else if (params.objectName == 'impoundedTowerManager') {
+				window.currentScene.impoundedTowerManager = new ImpoundedTowerManager();
                 setTimeout(function() {resolve();}, 100);
             }
             else if (params.objectName == 'poundMenu') {
@@ -146,19 +147,19 @@ export default class Game extends Phaser.Scene
 	* 8 - ui */
 	/** @param {!Object=} obj **/
 	/** @return {number} **/
-	calculateZIndex(obj)
-	{
-		if (obj.constructor)
-		{
+	calculateZIndex(obj) {
+		if (obj.constructor) {
 			//console.log(Object.getPrototypeOf(obj.constructor.name))
-			switch (obj.constructor.name)
-			{
+			switch (obj.constructor.name) {
 				case "Yard":
 					return 0;
 					break;
 				case "MailBox":
 				case "Owner":
 					return 1000;
+					break;
+				case "ImpoundedTower":
+					return 1000 + obj.position[1];
 					break;
 				case "Tower":
 				case "Enemy":
@@ -173,6 +174,8 @@ export default class Game extends Phaser.Scene
 				case "MainMenu":
 				case "UI":
 				case "PPSButton":
+				case "TowerInfoWidget":
+				case "FieldComponent":
 					return 8000;
 					break;
 				default:
@@ -213,7 +216,7 @@ export default class Game extends Phaser.Scene
 	
 	poundStartup(params = {from: "menuName"}) {
 		self = window.currentScene;
-        this.__create_game_object__(self, {objectName: 'impoundedTowersManager'})
+        this.__create_game_object__(self, {objectName: 'impoundedTowerManager'})
         .then(function(result) {if (!self.player) {self.__create_game_object__(self, {objectName: 'player'});}}, function(error) {console.log(error);})
 		.then(function(result) {self.__create_game_object__(self, {objectName: 'poundMenu', from: params.from});}, function(error) {console.log(error);})
 		.then(function(result) {self.__create_game_object__(self, {objectName: 'impoundedTowers'});}, function(error) {console.log(error);})

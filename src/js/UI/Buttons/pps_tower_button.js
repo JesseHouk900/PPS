@@ -1,5 +1,5 @@
 import PPSButton from './pps_button.js';
-import TowerGenerator from '../../Towers/tower.js';
+import TowerGenerator from '../../Towers/tower_generator.js';
 
 export default class PPSTowerButton extends PPSButton {
 
@@ -11,11 +11,11 @@ export default class PPSTowerButton extends PPSButton {
 			fontSize: '12px'
 		},
 		origin: [0, 0],
-		sprite: 'plant',
+		spriteKey: 'plant',
 		icon: ''
 	}) {
         super(params);
-        this.spriteKey = params.sprite;
+        this.spriteKey = params.spriteKey;
         this.sprite;
         
         this.setListener('pointerover', () => {this.style.fill = '#0f0'; this.text.setColor(this.style.fill);});
@@ -29,10 +29,10 @@ export default class PPSTowerButton extends PPSButton {
         if (!window.currentScene.player.isGhostActive
 			&& window.currentScene.player.ghostTowerType != this.spriteKey) {
 			var self = this;
+			console.log('ppsTowerButton: generatingTower: ' + this.spriteKey);
             TowerGenerator.generateTower({button: self, spriteKey: this.spriteKey});
         }
         this.button.input.enable = true;
-
     }
 	
 	destructor() {

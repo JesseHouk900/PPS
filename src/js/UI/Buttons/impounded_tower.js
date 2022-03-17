@@ -1,53 +1,10 @@
 import PPSButton from "./pps_button.js";
 import TowerInfoWidget from '../Widgets/tower_info_widget.js';
-import TowerGenerator from '../../Towers/tower.js';
+import TowerGenerator from '../../Towers/tower_generator.js';
+import impoundedTowerData from '../../Data/impounded_tower_data.json' assert {type: "json"};
+import towerData from '../../Data/tower_data.json' assert {type: "json"};
 
-export default class ImpoundedTowerGenerator {
-	
-	static towerData = {
-		"basicDog" : {
-			available: true,
-			impounded: []
-		},
-		"plant": {
-			available: true,
-			impounded: []
-		}
-	};
-	
-	constructor() {
-	
-	}
-	
-	/*** @param {Object: {
-		{string} icon Name of the image used for representation on widget(?)
-	***/
-	static spawnTower(params = {icon: ""}) {
-		var text = TowerGenerator.towerNames["generic"][TowerGenerator.getRandomTowerNameIndex()];
-		var managerKey = text + params.icon;
-		window.currentScene.impoundedTowersManager.towers[managerKey] = new ImpoundedTower ({
-			managerKey: [managerKey],
-			position: [Math.floor(Math.random() * 1000) + 100, Math.floor(Math.random() * 145) + 200],
-			style: {fill: '#fff', fontSize: '12px'},
-			icon: params.icon,
-			name: text,
-			sprite: params.icon,
-			attackType: TowerGenerator.getRandomTowerAttackType()
-		});
-		
-		ImpoundedTowerGenerator.towerData[params.icon].impounded.push(managerKey);
-		
-		return window.currentScene.impoundedTowersManager.towers[managerKey];
-	}
-}
-
-export class ImpoundedTowerManager {
-	constructor() {
-		this.towers = window.currentScene.physics.add.group();
-	}
-}
-
-export class ImpoundedTower extends PPSButton {
+export default class ImpoundedTower extends PPSButton {
 	/*** @param {!Object<string, undefined>: {
 		{string} text String that will be displayed along with tower preview,
 		!Array<number>} position The x and y of the button,
@@ -61,7 +18,7 @@ export class ImpoundedTower extends PPSButton {
 		{function(*): *} out Callback for when mouse moves out from over button,
 		{function(*): *} up Callback for when mouse is released over button,
 		{function(*): *} down Callback for when mouse is pressed over button,
-		{string} sprite Name of the sprite used for tower associated with button,
+		{string} spriteKey Name of the sprite used for tower associated with button,
 		{string} attackType The way the tower performs
 	} params
 	***/
@@ -75,17 +32,22 @@ export class ImpoundedTower extends PPSButton {
 		out: () => {}, 
 		up: () => {}, 
 		down: () => {},
-		sprite: '',
+		spriteKey: '',
 		attackType: ''}) {
 		
 		super(params);
 		this.text.visible = false;
 		this.managerKey = params.managerKey;
 		this.name = params.name;
-		this.attackType = params.attackType;
-		this.sprite = params.sprite;
+		if (params.attackType) {
+			this.attackType = params.attackType;
+		}
+		else {
+			this.attackType = "_debug_";
+		}
+		this.spriteKey = params.spriteKey;
 		this.icon = params.icon;
-		this.cost = TowerGenerator.generateCost(this.sprite);
+		this.cost = TowerGenerator.generateCost(this.spriteKey);
 		
 		this.setListenersForMouseInteraction({
 			over: params.over,
@@ -97,6 +59,7 @@ export class ImpoundedTower extends PPSButton {
 	
 	onClick() {
 		this.addToRoster();
+		window.currentScene.UI.info.destructor();
 	}
 	
 	addToRoster() {
@@ -107,10 +70,10 @@ export class ImpoundedTower extends PPSButton {
 			spriteKey: this.spriteKey,
 			icon: this.icon
 		});
-		ImpoundedTowerGenerator.towerData[this.spriteKey].impounded = 
-			ImpoundedTowerGenerator.towerData[this.spriteKey].impounded.
+		impoundedTowerData.towerStats[this.spriteKey].impounded = 
+			impoundedTowerData.towerStats[this.spriteKey].impounded.
 				filter(function(e, self) { return e !== self.managerKey;});
-		ImpoundedTowerGenerator.towerData[this.spriteType].count--;
+		impoundedTowerData.towerStats[this.spriteKey].count--;
 		this.destructor();
 	}
 	
@@ -124,13 +87,13 @@ export class ImpoundedTower extends PPSButton {
 	setOverListener(callback) {
 		if (!callback) {
 			this.setListener('pointerover', (pointer) => {
-				this.info = new TowerInfoWidget({
+				window.currentScene.UI.info = new TowerInfoWidget({
 					name: this.name,
 					cost: this.cost,
-					attackType: this.attackType
+					attackType: this.attackType,
+					parentOrigin: [this.button.x, this.button.y],
+					parentTopLeft: [this.button.getTopLeft().x, this.button.getTopLeft().y]
 				});
-				this.info.background.setSize(50, 50);
-				this.info.setPosition([pointer.x, pointer.y]);
 			});
 		}
 		else {
@@ -140,7 +103,7 @@ export class ImpoundedTower extends PPSButton {
 	
 	setOutListener(callback) {
 		if (!callback) {
-			this.setListener('pointerout', () => {this.info.destructor();});
+			this.setListener('pointerout', () => {window.currentScene.UI.info.destructor();});
 		}
 		else {
 			this.setListener('pointerout', callback);

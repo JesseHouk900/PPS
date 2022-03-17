@@ -1,5 +1,6 @@
 import RewardGenerator from '../Gameplay/reward.js';
 import WaveGenerator from '../Gameplay/wave_generator.js';
+import enemyData from '../Data/enemy_data.json' assert {type: "json"};
 
 export default class EnemyGenerator
 {
@@ -18,11 +19,11 @@ export default class EnemyGenerator
     }
 
     static generateEnemy(
-		params = {spriteKey: Object.keys(EnemyGenerator.enemyData)[Math.floor(Math.random() * Object.keys(EnemyGenerator.enemyData).length)]}) {
+		params = {spriteKey: Object.keys(enemyData.enemyStats)[Math.floor(Math.random() * Object.keys(enemyData.enemyStats).length)]}) {
 		/** @type {string} **/
         var managerKey = EnemyGenerator.generateNewManagerKey(params.spriteKey);
         window.currentScene.enemyManager.spawnEnemy({managerKey: managerKey, spriteKey: params.spriteKey});
-        EnemyGenerator.enemyData[params.spriteKey].count++;
+        enemyData.enemyStats[params.spriteKey].count++;
     }
 	
 	static generateEnemyRarity() {
@@ -31,7 +32,7 @@ export default class EnemyGenerator
 	}
 	/** @return {string} **/
 	static generateNewManagerKey(spriteType) {
-		return "" + spriteType + EnemyGenerator.enemyData[spriteType].count;
+		return "" + spriteType + enemyData.enemyStats[spriteType].count;
 	}
 }
 
@@ -46,10 +47,10 @@ export class EnemyManager {
         this.enemies[params.managerKey] = new Enemy( {
                 key: params.spriteKey,
 				managerKey: params.managerKey,
-                speed: EnemyGenerator.enemyData[params.spriteKey].speed,
-                pointValue: EnemyGenerator.enemyData[params.spriteKey].pointValue,
-                health: EnemyGenerator.enemyData[params.spriteKey].health,
-                damage: EnemyGenerator.enemyData[params.spriteKey].damage,
+                speed: enemyData.enemyStats[params.spriteKey].speed,
+                pointValue: enemyData.enemyStats[params.spriteKey].pointValue,
+                health: enemyData.enemyStats[params.spriteKey].health,
+                damage: enemyData.enemyStats[params.spriteKey].damage,
 				rarity: EnemyGenerator.generateEnemyRarity()
             });
         this.enemies[params.managerKey].sprite.flipX = true;
@@ -62,20 +63,20 @@ export class EnemyManager {
 		/** @type {!Array<Enemy>} **/
 		var active = [];
 		/** @type {!Array<String>} **/
-		var keys = Object.keys(EnemyGenerator.enemyData);
+		var keys = Object.keys(enemyData.enemyStats);
 		for (var i in keys)
 		{
-			console.log(keys[i])//, EnemyGenerator.enemyData[key].count);
-			if (EnemyGenerator.enemyData[keys[i]].count > 0)
+			console.log(keys[i])//, enemyData.enemyStats[key].count);
+			if (enemyData.enemyStats[keys[i]].count > 0)
 			{
-				for (let j = 0; j < EnemyGenerator.enemyData[keys[i]].count; j++)
+				for (let j = 0; j < enemyData.enemyStats[keys[i]].count; j++)
 				{
 					if (this.enemies[keys[i] + j])
 					{
 						active.push(j);
 						this.enemies[keys[i] + j].destructor();
 					}
-					EnemyGenerator.enemyData[keys[i]].count = 0;
+					enemyData.enemyStats[keys[i]].count = 0;
 				}
 			}
 		}
@@ -129,7 +130,7 @@ export class Enemy
 				{
 					if (enemy)
 					{
-						enemy.setVelocity(-EnemyGenerator.enemyData[enemy.texture.key].speed, 0);
+						enemy.setVelocity(-enemyData.enemyStats[enemy.texture.key].speed, 0);
 					}
 				}
 			}, 1000);
